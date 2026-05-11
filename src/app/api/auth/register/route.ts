@@ -11,10 +11,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
     }
 
+    console.log(`Registering user: ${email}`);
     await connectToDB();
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log(`Registration Failure: User already exists: ${email}`);
       return NextResponse.json({ message: 'User already exists' }, { status: 400 });
     }
 
@@ -27,8 +29,10 @@ export async function POST(req: Request) {
       vaultPin,
     });
 
+    console.log(`Registration Success: User created: ${email}`);
     return NextResponse.json({ message: 'User created successfully' }, { status: 201 });
   } catch (error) {
+    console.error('Registration Error:', error);
     return NextResponse.json({ message: 'An error occurred while registering the user' }, { status: 500 });
   }
 }
