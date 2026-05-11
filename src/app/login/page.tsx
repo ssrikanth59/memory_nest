@@ -68,8 +68,8 @@ export default function LoginPage() {
           >
             <Heart className="w-8 h-8 fill-rose-500" />
           </motion.div>
-          <h1 className="text-4xl font-heading font-extrabold mb-2 text-white tracking-tight drop-shadow-sm">Welcome Back</h1>
-          <p className="text-white/80 font-medium tracking-tight">Access your baby's digital sanctuary</p>
+          <h1 className="text-4xl font-heading font-extrabold mb-2 text-rose-950 tracking-tight drop-shadow-sm">Welcome Back</h1>
+          <p className="text-rose-900/70 font-medium tracking-tight">Access your baby's digital sanctuary</p>
         </div>
 
         {error && (
@@ -84,9 +84,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest ml-1 text-white/90">Email Address</label>
+            <label className="text-xs font-black uppercase tracking-widest ml-1 text-rose-950/80">Email Address</label>
             <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60 group-focus-within:text-white transition-colors" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-rose-900/40 group-focus-within:text-rose-900 transition-colors" />
               <input 
                 type="email" 
                 suppressHydrationWarning
@@ -94,18 +94,18 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-white/10 border-2 border-white/20 focus:border-white/50 rounded-2xl pl-12 pr-6 py-4 outline-none transition-all placeholder:text-white/40 text-white font-bold shadow-sm backdrop-blur-sm" 
+                className="w-full bg-white/40 border-2 border-white/40 focus:border-rose-300 rounded-2xl pl-12 pr-6 py-4 outline-none transition-all placeholder:text-rose-900/30 text-rose-950 font-bold shadow-sm backdrop-blur-md" 
               />
             </div>
           </div>
           
           <div className="space-y-2">
             <div className="flex justify-between items-center ml-1">
-              <label className="text-xs font-black uppercase tracking-widest text-white/90">Password</label>
-              <Link href="#" className="text-[10px] text-white/70 hover:text-white hover:underline font-black uppercase tracking-widest">Forgot Password?</Link>
+              <label className="text-xs font-black uppercase tracking-widest text-rose-950/80">Password</label>
+              <Link href="#" className="text-[10px] text-rose-900/60 hover:text-rose-900 hover:underline font-black uppercase tracking-widest">Forgot Password?</Link>
             </div>
             <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60 group-focus-within:text-white transition-colors" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-rose-900/40 group-focus-within:text-rose-900 transition-colors" />
               <input 
                 type="password" 
                 suppressHydrationWarning
@@ -113,7 +113,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full bg-white/10 border-2 border-white/20 focus:border-white/50 rounded-2xl pl-12 pr-6 py-4 outline-none transition-all placeholder:text-white/40 text-white font-bold shadow-sm backdrop-blur-sm" 
+                className="w-full bg-white/40 border-2 border-white/40 focus:border-rose-300 rounded-2xl pl-12 pr-6 py-4 outline-none transition-all placeholder:text-rose-900/30 text-rose-950 font-bold shadow-sm backdrop-blur-md" 
               />
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function LoginPage() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full mt-6 bg-white text-rose-500 hover:bg-white/90 py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-xl shadow-rose-500/20 disabled:opacity-70"
+            className="w-full mt-6 bg-rose-500 text-white hover:bg-rose-600 py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-xl shadow-rose-500/20 disabled:opacity-70"
           >
             {loading ? "Signing in..." : (
               <>
@@ -132,9 +132,9 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-10 text-center">
-          <p className="text-sm text-white/80 font-bold">
+          <p className="text-sm text-rose-950/70 font-bold">
             Don't have an account?{" "}
-            <Link href="/register" className="text-white font-black hover:underline">
+            <Link href="/register" className="text-rose-600 font-black hover:underline">
               Create a vault
             </Link>
           </p>
