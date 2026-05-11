@@ -30,7 +30,8 @@
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.4.3",
-    "zustand": "^5.0.13"
+    "zustand": "^5.0.13",
+    "@react-spring/web": "^10.0.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
