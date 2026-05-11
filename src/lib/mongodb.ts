@@ -28,10 +28,22 @@ export async function connectToDB() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(finalUri, opts).then((mongoose) => {
-      return mongoose;
-    });
+    cached.promise = mongoose.connect(finalUri, opts)
+      .then((mongoose) => {
+        console.log("MongoDB connected successfully");
+        return mongoose;
+      })
+      .catch((error) => {
+        console.error("MongoDB connection error:", error);
+        throw error;
+      });
   }
-  cached.conn = await cached.promise;
+  
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null; // Reset promise so it can retry next time
+    throw e;
+  }
   return cached.conn;
 }
