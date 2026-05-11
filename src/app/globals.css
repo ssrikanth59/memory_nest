@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+@theme {
+  /* Dynamic Sunset Palette from Image */
+  --color-teal-dark: #264653;
+  --color-teal-light: #2a9d8f;
+  --color-yellow-warm: #e9c46a;
+  --color-orange-soft: #f4a261;
+  --color-orange-vibrant: #e76f51;
+
+  --color-ruby-rose: #ff2d55;
+  --color-amethyst: #9b51e0;
+  --color-sapphire: #007aff;
+  --color-royal-gold: #ffcc33;
+  --color-emerald: #10b981;
+  --color-deep-crystal: #0f172a;
+  
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-attract: "Space Grotesk", sans-serif;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #264653; 
+  --primary: #2a9d8f;
+  --secondary: #e9c46a;
+  --accent: #e76f51;
+  --muted: #6b7280;
+  --text-primary: #264653; 
+  --text-secondary: #2a9d8f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #111827; 
+    --foreground: #f9fafb; 
+    --primary: #2a9d8f;
+    --secondary: #f4a261;
+    --accent: #e76f51;
+    --muted: #9ca3af;
+    --text-primary: #f9fafb;
+    --text-secondary: #e9c46a;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Ensure all buttons have the hand/palm cursor */
+button, [role="button"], input[type="button"], input[type="submit"] {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.bg-aurora {
+  background: 
+    radial-gradient(circle at 15% 25%, rgba(38, 70, 83, 0.1) 0%, transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(42, 157, 143, 0.1) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(233, 196, 106, 0.1) 0%, transparent 55%),
+    radial-gradient(circle at 75% 85%, rgba(244, 162, 97, 0.1) 0%, transparent 45%),
+    radial-gradient(circle at 25% 75%, rgba(231, 111, 81, 0.1) 0%, transparent 45%);
+  filter: blur(100px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -10;
+  opacity: 0.8;
+  animation: aurora-pulse 30s infinite alternate ease-in-out;
+}
+
+.bg-sunset-theme {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 50%, #6BCB77 100%);
+  background-size: 400% 400%;
+  animation: sunset-gradient 15s ease infinite;
+}
+
+@keyframes sunset-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes aurora-pulse {
+  0% { transform: scale(1) rotate(0deg); opacity: 0.7; }
+  50% { transform: scale(1.15) rotate(1deg); opacity: 0.9; }
+  100% { transform: scale(1.05) rotate(-1deg); opacity: 0.7; }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  border-radius: 2rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .glass-card {
+  background: rgba(17, 24, 39, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(42, 157, 143, 0.3);
+  box-shadow: 
+    0 20px 25px -5px rgba(38, 70, 83, 0.1),
+    0 10px 10px -5px rgba(38, 70, 83, 0.04);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #264653 0%, #2a9d8f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+}
+
+.dark .text-gradient {
+  background: linear-gradient(135deg, #e9c46a 0%, #f4a261 100%);
+}
+
+.font-attract {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px 0 rgba(42, 157, 143, 0.39);
+}
+
+.btn-primary:hover {
+  background-color: #238b7e;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(42, 157, 143, 0.23);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: #264653;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #dfb550;
+  transform: translateY(-2px);
+}
