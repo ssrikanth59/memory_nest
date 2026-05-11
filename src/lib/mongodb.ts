@@ -1,10 +1,16 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/memory-nest";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Please define the MONGODB_URI environment variable inside the Vercel dashboard');
+  }
+  // Fallback for local development if not in .env.local
+  // Note: It's better to always require it, but we can fallback to localhost for ease of development
 }
+
+const finalUri = MONGODB_URI || "mongodb://localhost:27017/memory-nest";
 
 let cached = (global as any).mongoose;
 
@@ -22,7 +28,7 @@ export async function connectToDB() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(finalUri, opts).then((mongoose) => {
       return mongoose;
     });
   }

@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [vaultPin, setVaultPin] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, vaultPin }),
       });
 
       if (res.ok) {
@@ -116,6 +117,21 @@ export default function RegisterPage() {
               placeholder="••••••••" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full bg-white/10 border-2 border-white/20 focus:border-white/50 rounded-2xl px-6 py-5 outline-none transition-all placeholder:text-white/40 text-white font-bold shadow-sm backdrop-blur-sm" 
+            />
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-xs font-black uppercase tracking-[0.2em] ml-1 text-white/90">Vault PIN</label>
+            <input 
+              type="password" 
+              placeholder="1234" 
+              maxLength={4}
+              pattern="\d*"
+              inputMode="numeric"
+              value={vaultPin}
+              onChange={(e) => setVaultPin(e.target.value)}
               required
               className="w-full bg-white/10 border-2 border-white/20 focus:border-white/50 rounded-2xl px-6 py-5 outline-none transition-all placeholder:text-white/40 text-white font-bold shadow-sm backdrop-blur-sm" 
             />

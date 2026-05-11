@@ -14,22 +14,37 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log("Auth Failure: Missing email or password");
           throw new Error("Invalid credentials");
         }
 
-        await connectToDB();
+        try {
+          await connectToDB();
+        } catch (error) {
+          console.error("Auth Failure: Database connection error", error);
+          throw new Error("Database connection failed");
+        }
 
         const user = await User.findOne({ email: credentials.email });
 
-        if (!user || !user.password) {
+        if (!user) {
+          console.log(`Auth Failure: User not found with email: ${credentials.email}`);
+          throw new Error("Invalid credentials");
+        }
+
+        if (!user.password) {
+          console.log(`Auth Failure: User ${credentials.email} has no password set`);
           throw new Error("Invalid credentials");
         }
 
         const isCorrectPassword = await bcrypt.compare(credentials.password, user.password);
 
         if (!isCorrectPassword) {
+          console.log(`Auth Failure: Incorrect password for user: ${credentials.email}`);
           throw new Error("Invalid credentials");
         }
+
+        console.log(`Auth Success: User logged in: ${credentials.email}`);
 
         return { 
           id: user._id.toString(), 
@@ -105,5 +120,5 @@ export const authOptions: NextAuthOptions = {
       return session;
     }
   },
-  secret: process.env.NEXTAUTH_SECRET || "your-very-secure-random-secret-key-memory-nest-1234",
+  secret: process.env.NEXTAUTH_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error("NEXTAUTH_SECRET is required in production"); })() : "your-very-secure-random-secret-key-memory-nest-1234"),
 };

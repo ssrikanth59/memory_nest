@@ -29,13 +29,13 @@ export default function LoginPage() {
       if (res?.error) {
         setError("Invalid credentials. Please try again.");
       } else {
-        window.location.href = "/dashboard";
+        router.push("/dashboard");
       }
     } catch (err: any) {
       console.error("Login Error:", err);
       // Force redirect. If the server successfully authenticated but the browser threw a network error,
       // the secure cookie is already set. If they are truly unauthenticated, the dashboard will safely kick them back.
-      window.location.href = "/dashboard";
+      router.push("/dashboard");
     } finally {
       setLoading(false);
     }
