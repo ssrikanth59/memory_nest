@@ -9,7 +9,8 @@ import { useSearch } from "@/components/providers/SearchProvider";
 export function TopNav() {
   const { data: session } = useSession();
   const { searchQuery, setSearchQuery } = useSearch();
-  const userName = session?.user?.name || "User";
+  const isDemo = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === 'true';
+  const userName = isDemo ? "Demo User" : (session?.user?.name || "User");
   const [showNotifications, setShowNotifications] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -128,7 +129,9 @@ export function TopNav() {
             />
           </div>
           <div className="flex flex-col text-left">
-            <span className="text-[10px] text-ruby-rose font-black uppercase tracking-[0.2em] leading-none mb-1">Authenticated</span>
+            <span className={`text-[10px] font-black uppercase tracking-[0.2em] leading-none mb-1 ${isDemo ? 'text-emerald-500' : 'text-ruby-rose'}`}>
+              {isDemo ? 'Preview Mode' : 'Authenticated'}
+            </span>
             <span className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-zinc-100 font-attract truncate max-w-[150px]">
               {userName}
             </span>

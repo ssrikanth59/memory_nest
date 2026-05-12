@@ -27,7 +27,11 @@ export default function LoginPage() {
       });
 
       if (res?.error) {
-        setError("Invalid credentials. Please try again.");
+        if (res.error.includes("Database connection failed") || res.error.includes("authentication failed")) {
+          setError("⚠️ Database connection issue. Would you like to try Demo Mode?");
+        } else {
+          setError(res.error === "CredentialsSignin" ? "Invalid email or password" : res.error);
+        }
       } else {
         router.push("/dashboard");
       }
@@ -39,6 +43,10 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDemoMode = () => {
+    router.push("/dashboard?demo=true");
   };
 
   return (
@@ -73,13 +81,23 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-red-600/90 border-2 border-red-400 text-white text-sm py-4 px-4 rounded-xl mb-6 text-center font-bold shadow-xl backdrop-blur-md"
-          >
-            {error}
-          </motion.div>
+          <div className="space-y-4 mb-6">
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-600/90 border-2 border-red-400 text-white text-sm py-4 px-4 rounded-xl text-center font-bold shadow-xl backdrop-blur-md"
+            >
+              {error}
+            </motion.div>
+            {error.includes("Demo Mode") && (
+              <button 
+                onClick={handleDemoMode}
+                className="w-full bg-emerald-600/90 border-2 border-emerald-400 text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-xl backdrop-blur-md"
+              >
+                Enter Demo Mode ✨
+              </button>
+            )}
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">

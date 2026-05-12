@@ -32,7 +32,9 @@ const item = {
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const userName = session?.user?.name || "Parent";
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const isDemoMode = searchParams?.get('demo') === 'true';
+  const userName = isDemoMode ? "Demo Parent" : (session?.user?.name || "Parent");
   const [stars, setStars] = React.useState<{left: string, top: string, width: string, height: string, duration: string}[]>([]);
   const [stats, setStats] = React.useState({
     totalMemories: 0,
@@ -50,6 +52,15 @@ export default function DashboardPage() {
 
   React.useEffect(() => {
     const fetchStats = async () => {
+      if (isDemoMode) {
+        setStats({
+          totalMemories: 124,
+          videos: 12,
+          favorites: 48,
+          capsules: 5
+        });
+        return;
+      }
       try {
         const res = await fetch("/api/stats");
         const data = await res.json();
@@ -62,6 +73,17 @@ export default function DashboardPage() {
     };
 
     const fetchOnThisDay = async () => {
+      if (isDemoMode) {
+        setOnThisDayMemories([{
+          _id: "demo-1",
+          title: "First Birthday Celebration",
+          mediaUrl: "/images/login-bg.png",
+          date: new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString(),
+          type: "photo"
+        }]);
+        setIsFetchingOnThisDay(false);
+        return;
+      }
       try {
         setIsFetchingOnThisDay(true);
         // Get all memories and filter on client to find same month/day

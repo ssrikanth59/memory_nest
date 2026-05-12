@@ -18,7 +18,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (status === "loading") return;
 
     if (status === "unauthenticated") {
-      router.push("/login");
+      const isDemo = new URLSearchParams(window.location.search).get('demo') === 'true';
+      if (!isDemo) {
+        router.push("/login");
+        return;
+      }
+      setChecking(false);
       return;
     }
     
