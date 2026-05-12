@@ -50,15 +50,6 @@ export default function DashboardPage() {
 
   React.useEffect(() => {
     const fetchStats = async () => {
-      if (isDemoMode) {
-        setStats({
-          totalMemories: 124,
-          videos: 12,
-          favorites: 48,
-          capsules: 5
-        });
-        return;
-      }
       try {
         const res = await fetch("/api/stats");
         const data = await res.json();
@@ -71,17 +62,6 @@ export default function DashboardPage() {
     };
 
     const fetchOnThisDay = async () => {
-      if (isDemoMode) {
-        setOnThisDayMemories([{
-          _id: "demo-1",
-          title: "First Birthday Celebration",
-          mediaUrl: "/images/login-bg.png",
-          date: new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString(),
-          type: "photo"
-        }]);
-        setIsFetchingOnThisDay(false);
-        return;
-      }
       try {
         setIsFetchingOnThisDay(true);
         // Get all memories and filter on client to find same month/day
@@ -160,8 +140,6 @@ export default function DashboardPage() {
       initial="hidden"
       animate="show"
     >
-
-
       <motion.div variants={item} className="mb-8 md:mb-12 relative">
         <div className="absolute -top-10 -left-10 w-24 h-24 bg-ruby-rose/20 blur-3xl rounded-full animate-pulse" />
         <div className="flex items-center gap-3 mb-2">
@@ -203,9 +181,7 @@ export default function DashboardPage() {
       </motion.div>
 
       <div className="grid lg:grid-cols-3 gap-10">
-        {/* Main Content Area */}
         <div className="lg:col-span-2 space-y-10">
-          
           <motion.section variants={item}>
             <div className="flex items-center justify-between mb-8 px-2">
               <h2 className="text-4xl font-heading font-black flex items-center gap-3 font-attract tracking-tighter">
@@ -217,53 +193,18 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="scrapbook-grid rounded-[3rem] shadow-inner bg-white/30 dark:bg-zinc-900/40 p-6 flex flex-wrap gap-8 justify-center">
-              <div 
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.onchange = (e) => {
-                    const file = (e.target as HTMLInputElement).files?.[0];
-                    if (file) {
-                      // We can store the file in a global state or just redirect to upload with a hint
-                      // For now, let's redirect to upload which is the standard way to handle the formal upload
-                      window.location.href = `/upload?preselect=true`;
-                    }
-                  };
-                  input.click();
-                }}
-                className="w-full md:w-auto cursor-pointer"
-              >
-                <div className="polaroid-frame flex flex-col items-center justify-center min-h-[300px] w-full md:w-[250px] border-2 border-dashed border-zinc-300 hover:border-ruby-rose hover:bg-ruby-rose/5 transition-all group">
-                  <div className="w-16 h-16 bg-zinc-100 group-hover:bg-ruby-rose/20 rounded-full flex items-center justify-center mb-4 transition-colors">
-                      <ImageIcon className="w-8 h-8 text-zinc-400 group-hover:text-ruby-rose transition-colors" />
-                  </div>
-                  <p className="font-attract text-zinc-500 group-hover:text-ruby-rose">First Smile...</p>
-                  <span className="text-[10px] text-zinc-400 mt-2 font-black uppercase">Click to Browse</span>
-                </div>
-              </div>
-
-              <div 
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.click();
-                }}
-                className="w-full md:w-auto cursor-pointer"
-              >
-                <div className="polaroid-frame flex flex-col items-center justify-center min-h-[300px] w-full md:w-[250px] border-2 border-dashed border-zinc-300 rotate-[3deg] hover:rotate-0 hover:border-amethyst hover:bg-amethyst/5 transition-all group">
-                  <div className="w-16 h-16 bg-zinc-100 group-hover:bg-amethyst/20 rounded-full flex items-center justify-center mb-4 transition-colors">
-                      <Baby className="w-8 h-8 text-zinc-400 group-hover:text-amethyst transition-colors" />
-                  </div>
-                  <p className="font-attract text-zinc-500 group-hover:text-amethyst">First Steps</p>
-                  <span className="text-[10px] text-zinc-400 mt-2 font-black uppercase">Click to Browse</span>
-                </div>
+            <div className="scrapbook-grid rounded-[3rem] shadow-inner bg-white/30 dark:bg-zinc-900/40 p-6 flex flex-wrap gap-8 justify-center min-h-[400px] items-center">
+              <div className="text-center p-12">
+                <ImageIcon className="w-16 h-16 text-zinc-300 mx-auto mb-4 opacity-50" />
+                <p className="text-xl font-attract text-zinc-400 mb-6 italic">Your digital sanctuary is waiting for its first memory...</p>
+                <Link href="/upload" className="inline-flex items-center gap-2 text-ruby-rose font-black uppercase text-xs tracking-widest hover:underline">
+                  Start Uploading <ChevronRight className="w-4 h-4" />
+                </Link>
               </div>
             </div>
           </motion.section>
         </div>
 
-        {/* Sidebar Widgets Area */}
         <div className="space-y-8">
           <motion.div variants={item} className="glass-card p-8 rounded-[3rem] relative overflow-hidden bg-white/80 dark:bg-zinc-900/40 shadow-2xl border-white/40">
             <div className="absolute top-0 right-0 w-48 h-48 bg-royal-gold/10 blur-[60px] pointer-events-none rounded-full" />
