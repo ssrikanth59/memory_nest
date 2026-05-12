@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { connectToDB } from "@/lib/mongodb";
 import { User } from "@/lib/models/User";
 import mongoose from "mongoose";
-import { MockDB } from "./mock-db";
+import { cookies } from "next/headers";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -39,17 +39,23 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Case 2: Database failure or User not found in DB
-          // Check the Mock DB (to make it work instantly)
-          const mockUser = await MockDB.findUserByEmail(credentials.email);
-          if (mockUser && mockUser.password) {
-            const isCorrectPassword = await bcrypt.compare(credentials.password, mockUser.password);
-            if (isCorrectPassword) {
-              return {
-                id: mockUser.id,
-                email: mockUser.email,
-                name: mockUser.name,
-                vaultPin: mockUser.vaultPin
-              };
+          // Check the Persistent Cookie (to make it work instantly on Vercel)
+          const cookieStore = cookies();
+          const mockUserCookie = cookieStore.get('MOCK_USER_DATA');
+          
+          if (mockUserCookie) {
+            const userData = JSON.parse(Buffer.from(mockUserCookie.value, 'base64').toString());
+            
+            if (userData.email === credentials.email) {
+              const isCorrectPassword = await bcrypt.compare(credentials.password, userData.hashedPassword);
+              if (isCorrectPassword) {
+                return {
+                  id: 'mock-' + Date.now(),
+                  email: userData.email,
+                  name: userData.name,
+                  vaultPin: userData.vaultPin
+                };
+              }
             }
           }
 

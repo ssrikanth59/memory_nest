@@ -46,7 +46,20 @@ export async function POST(req: Request) {
       vaultPin
     });
 
-    return NextResponse.json({ message: 'Registration successful' }, { status: 201 });
+    // We set a cookie to make the "Mock User" persist between requests on Vercel
+    // This is the "Perfect" method for a single-user demo
+    const response = NextResponse.json({ message: 'Registration successful' }, { status: 201 });
+    
+    // Store user data in a cookie (simplified for demo purposes)
+    const userData = JSON.stringify({ name, email, hashedPassword, vaultPin });
+    response.cookies.set('MOCK_USER_DATA', Buffer.from(userData).toString('base64'), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24, // 1 day
+      path: '/',
+    });
+
+    return response;
   } catch (error: any) {
     console.error('Registration Error:', error.message);
     return NextResponse.json({ message: 'An error occurred during registration' }, { status: 500 });

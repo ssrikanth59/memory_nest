@@ -1,18 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Heart, Mail, Lock, ArrowRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Heart, Mail, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("registered") === "true") {
+      setShowSuccess(true);
+      // Hide success message after 5 seconds
+      const timer = setTimeout(() => setShowSuccess(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,29 +44,19 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       console.error("Login Error:", err);
-      // Force redirect. If the server successfully authenticated but the browser threw a network error,
-      // the secure cookie is already set. If they are truly unauthenticated, the dashboard will safely kick them back.
       router.push("/dashboard");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDemoMode = () => {
-    router.push("/dashboard?demo=true");
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-end p-0 relative bg-black md:pr-12 lg:pr-24">
-      {/* Dynamic Background Image - High Quality Setup */}
+      {/* Dynamic Background Image */}
       <div 
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
-        style={{ 
-          backgroundImage: 'url("/images/login-bg.png")',
-          imageRendering: 'auto'
-        }}
+        style={{ backgroundImage: 'url("/images/login-bg.png")' }}
       >
-        {/* Subtle overlay to enhance contrast without losing image detail */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/20" />
       </div>
       
@@ -76,6 +77,22 @@ export default function LoginPage() {
           <p className="text-rose-900/70 font-medium tracking-tight">Access your baby's digital sanctuary</p>
         </div>
 
+        <AnimatePresence>
+          {showSuccess && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-emerald-500/20 border-2 border-emerald-500/30 text-emerald-100 py-4 px-4 rounded-2xl mb-8 flex items-center gap-3 shadow-lg backdrop-blur-md"
+            >
+              <div className="bg-emerald-500 rounded-full p-1 shrink-0">
+                <CheckCircle2 className="w-5 h-5 text-white" />
+              </div>
+              <p className="text-sm font-bold text-rose-950">Registration successful! You can now sign in.</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {error && !error.includes("Database") && (
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
@@ -93,7 +110,6 @@ export default function LoginPage() {
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-rose-900/40 group-focus-within:text-rose-900 transition-colors" />
               <input 
                 type="email" 
-                suppressHydrationWarning
                 placeholder="you@example.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -112,7 +128,6 @@ export default function LoginPage() {
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-rose-900/40 group-focus-within:text-rose-900 transition-colors" />
               <input 
                 type="password" 
-                suppressHydrationWarning
                 placeholder="••••••••" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

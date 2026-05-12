@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Heart, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
@@ -15,6 +14,7 @@ export default function RegisterPage() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,18 +31,10 @@ export default function RegisterPage() {
       });
 
       if (res.ok) {
-        // Automatically sign in the user after successful registration
-        const signInResult = await signIn("credentials", {
-          email,
-          password,
-          redirect: false,
-        });
-
-        if (signInResult?.error) {
+        setIsSuccess(true);
+        setTimeout(() => {
           router.push("/login?registered=true");
-        } else {
-          router.push("/dashboard");
-        }
+        }, 2000);
       } else {
         const data = await res.json();
         setError(data.message || "An error occurred");
@@ -52,13 +44,6 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDemoMode = () => {
-    // Mock a successful login for demo purposes
-    // We can set a flag in localStorage or just redirect to a demo-specific dashboard
-    // For now, let's just push to dashboard and the dashboard will handle the session
-    router.push("/dashboard?demo=true");
   };
 
   return (
@@ -88,81 +73,101 @@ export default function RegisterPage() {
           <p className="text-rose-900/70 text-lg font-medium italic">Join the <span className="text-rose-950 font-bold">aurora of memories</span></p>
         </div>
 
-        {error && !error.includes("Database") && (
-          <div className="bg-red-500/20 border border-red-500/30 text-white text-sm p-4 rounded-2xl mb-6 text-center font-bold backdrop-blur-md">
-            {error}
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {isSuccess ? (
+            <motion.div 
+              key="success-message"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center py-10 space-y-6 text-center"
+            >
+              <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center border-2 border-emerald-500/30">
+                <CheckCircle2 className="w-12 h-12 text-emerald-400" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-rose-950 mb-2">Registration Successful!</h2>
+                <p className="text-rose-900/70 font-bold italic">Opening the sanctuary login...</p>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div key="register-form">
+              {error && !error.includes("Database") && (
+                <div className="bg-red-500/20 border border-red-500/30 text-white text-sm p-4 rounded-2xl mb-6 text-center font-bold backdrop-blur-md">
+                  {error}
+                </div>
+              )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-          <div className="space-y-3">
-            <label className="text-xs font-black uppercase tracking-[0.2em] ml-1 text-rose-950/80">Full Name</label>
-            <input 
-              type="text" 
-              placeholder="Jane Doe" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full bg-white/40 border-2 border-white/40 focus:border-rose-300 rounded-2xl px-6 py-5 outline-none transition-all placeholder:text-rose-900/30 text-rose-950 font-bold shadow-sm backdrop-blur-md" 
-            />
-          </div>
-          <div className="space-y-3">
-            <label className="text-xs font-black uppercase tracking-[0.2em] ml-1 text-rose-950/80">Email Address</label>
-            <input 
-              type="email" 
-              placeholder="you@example.com" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full bg-white/40 border-2 border-white/40 focus:border-rose-300 rounded-2xl px-6 py-5 outline-none transition-all placeholder:text-rose-900/30 text-rose-950 font-bold shadow-sm backdrop-blur-md" 
-            />
-          </div>
-          <div className="space-y-3">
-            <label className="text-xs font-black uppercase tracking-[0.2em] ml-1 text-rose-950/80">Secure Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full bg-white/40 border-2 border-white/40 focus:border-rose-300 rounded-2xl px-6 py-5 outline-none transition-all placeholder:text-rose-900/30 text-rose-950 font-bold shadow-sm backdrop-blur-md" 
-            />
-          </div>
+              <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-[0.2em] ml-1 text-rose-950/80">Full Name</label>
+                  <input 
+                    type="text" 
+                    placeholder="Jane Doe" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full bg-white/40 border-2 border-white/40 focus:border-rose-300 rounded-2xl px-6 py-5 outline-none transition-all placeholder:text-rose-900/30 text-rose-950 font-bold shadow-sm backdrop-blur-md" 
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-[0.2em] ml-1 text-rose-950/80">Email Address</label>
+                  <input 
+                    type="email" 
+                    placeholder="you@example.com" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full bg-white/40 border-2 border-white/40 focus:border-rose-300 rounded-2xl px-6 py-5 outline-none transition-all placeholder:text-rose-900/30 text-rose-950 font-bold shadow-sm backdrop-blur-md" 
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-[0.2em] ml-1 text-rose-950/80">Secure Password</label>
+                  <input 
+                    type="password" 
+                    placeholder="••••••••" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full bg-white/40 border-2 border-white/40 focus:border-rose-300 rounded-2xl px-6 py-5 outline-none transition-all placeholder:text-rose-900/30 text-rose-950 font-bold shadow-sm backdrop-blur-md" 
+                  />
+                </div>
 
-          <div className="space-y-3">
-            <label className="text-xs font-black uppercase tracking-[0.2em] ml-1 text-rose-950/80">Vault PIN</label>
-            <input 
-              type="password" 
-              placeholder="1234" 
-              maxLength={4}
-              pattern="\d*"
-              inputMode="numeric"
-              value={vaultPin}
-              onChange={(e) => setVaultPin(e.target.value)}
-              required
-              className="w-full bg-white/40 border-2 border-white/40 focus:border-rose-300 rounded-2xl px-6 py-5 outline-none transition-all placeholder:text-rose-900/30 text-rose-950 font-bold shadow-sm backdrop-blur-md" 
-            />
-          </div>
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-[0.2em] ml-1 text-rose-950/80">Vault PIN</label>
+                  <input 
+                    type="password" 
+                    placeholder="1234" 
+                    maxLength={4}
+                    pattern="\d*"
+                    inputMode="numeric"
+                    value={vaultPin}
+                    onChange={(e) => setVaultPin(e.target.value)}
+                    required
+                    className="w-full bg-white/40 border-2 border-white/40 focus:border-rose-300 rounded-2xl px-6 py-5 outline-none transition-all placeholder:text-rose-900/30 text-rose-950 font-bold shadow-sm backdrop-blur-md" 
+                  />
+                </div>
 
-          
-          <button 
-            disabled={loading} 
-            type="submit" 
-            className="w-full mt-4 bg-rose-500 text-white hover:bg-rose-600 py-5 rounded-2xl font-black text-xl tracking-tight flex items-center justify-center gap-3 active:scale-95 shadow-2xl shadow-rose-500/20 disabled:opacity-50"
-          >
-            {loading ? (
-              <motion.div 
-                animate={{ rotate: 360 }} 
-                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full"
-              />
-            ) : "Join Now"}
-          </button>
-        </form>
+                <button 
+                  disabled={loading} 
+                  type="submit" 
+                  className="w-full mt-4 bg-rose-500 text-white hover:bg-rose-600 py-5 rounded-2xl font-black text-xl tracking-tight flex items-center justify-center gap-3 active:scale-95 shadow-2xl shadow-rose-500/20 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <motion.div 
+                      animate={{ rotate: 360 }} 
+                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                      className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full"
+                    />
+                  ) : "Join Now"}
+                </button>
+              </form>
 
-        <p className="mt-10 text-center text-sm font-bold relative z-10 text-rose-950/70">
-          Already have a vault? <Link href="/login" className="text-rose-600 font-black hover:underline uppercase tracking-widest ml-1">Sign in</Link>
-        </p>
+              <p className="mt-10 text-center text-sm font-bold relative z-10 text-rose-950/70">
+                Already have a vault? <Link href="/login" className="text-rose-600 font-black hover:underline uppercase tracking-widest ml-1">Sign in</Link>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );
