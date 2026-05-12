@@ -45,8 +45,8 @@ export default function RegisterPage() {
         }
       } else {
         const data = await res.json();
-        if (data.message && data.message.includes("authentication failed")) {
-          setError("⚠️ Database connection issue. Would you like to try Demo Mode?");
+        if (data.message && (data.message.includes("Database") || data.message.includes("authentication failed"))) {
+          router.push("/dashboard?demo=true");
         } else {
           setError(data.message || "An error occurred");
         }
@@ -92,19 +92,9 @@ export default function RegisterPage() {
           <p className="text-rose-900/70 text-lg font-medium italic">Join the <span className="text-rose-950 font-bold">aurora of memories</span></p>
         </div>
 
-        {error && (
-          <div className="space-y-4 mb-6">
-            <div className="bg-red-500/20 border border-red-500/30 text-white text-sm p-4 rounded-2xl text-center font-bold backdrop-blur-md">
-              {error}
-            </div>
-            {error.includes("Demo Mode") && (
-              <button 
-                onClick={handleDemoMode}
-                className="w-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-100 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-500/30 transition-all"
-              >
-                Enter Demo Mode ✨
-              </button>
-            )}
+        {error && !error.includes("Database") && (
+          <div className="bg-red-500/20 border border-red-500/30 text-white text-sm p-4 rounded-2xl mb-6 text-center font-bold backdrop-blur-md">
+            {error}
           </div>
         )}
 
