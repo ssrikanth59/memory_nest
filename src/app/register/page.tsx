@@ -45,11 +45,7 @@ export default function RegisterPage() {
         }
       } else {
         const data = await res.json();
-        if (data.message && (data.message.includes("Database") || data.message.includes("authentication failed"))) {
-          router.push("/dashboard?demo=true");
-        } else {
-          setError(data.message || "An error occurred");
-        }
+        setError(data.message || "An error occurred");
       }
     } catch (err) {
       setError("Something went wrong. Please check your connection.");

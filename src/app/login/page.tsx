@@ -27,12 +27,7 @@ export default function LoginPage() {
       });
 
       if (res?.error) {
-        if (res.error.includes("Database") || res.error.includes("authentication failed")) {
-          // Auto-transition to demo mode if DB is unreachable
-          router.push("/dashboard?demo=true");
-        } else {
-          setError(res.error === "CredentialsSignin" ? "Invalid email or password" : res.error);
-        }
+        setError(res.error === "CredentialsSignin" ? "Invalid email or password" : res.error);
       } else {
         router.push("/dashboard");
       }

@@ -32,9 +32,7 @@ const item = {
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const isDemoMode = searchParams?.get('demo') === 'true';
-  const userName = isDemoMode ? "Demo Parent" : (session?.user?.name || "Parent");
+  const userName = session?.user?.name || "User";
   const [stars, setStars] = React.useState<{left: string, top: string, width: string, height: string, duration: string}[]>([]);
   const [stats, setStats] = React.useState({
     totalMemories: 0,
