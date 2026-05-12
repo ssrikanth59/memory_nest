@@ -23,9 +23,21 @@ export interface MockMemory {
   createdAt: string;
 }
 
+export interface MockCapsule {
+  _id: string;
+  name: string;
+  content: string;
+  unlockDate: string;
+  pin: string;
+  userId: string;
+  status: 'locked' | 'unlocked';
+  createdAt: string;
+}
+
 // In-memory store (clears on server restart, but allows "making it work" instantly)
 const mockUsers: MockUser[] = [];
 const mockMemories: MockMemory[] = [];
+const mockCapsules: MockCapsule[] = [];
 
 export const MockDB = {
   // USER METHODS
@@ -67,13 +79,28 @@ export const MockDB = {
     return mockMemories[index];
   },
 
+  // CAPSULE METHODS
+  async createCapsule(capsule: Omit<MockCapsule, '_id' | 'createdAt'>): Promise<MockCapsule> {
+    const newCapsule: MockCapsule = {
+      ...capsule,
+      _id: 'mock-cap-' + Math.random().toString(36).substring(7),
+      createdAt: new Date().toISOString()
+    };
+    mockCapsules.push(newCapsule);
+    return newCapsule;
+  },
+
+  async findCapsules(userId: string): Promise<MockCapsule[]> {
+    return mockCapsules.filter(c => c.userId === userId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  },
+
   async getStats(userId: string) {
     const userMems = mockMemories.filter(m => m.userId === userId);
     return {
       totalMemories: userMems.length,
       videos: userMems.filter(m => m.type === 'video').length,
       favorites: userMems.filter(m => m.isFavorite).length,
-      capsules: 0 // Mocking for now
+      capsules: mockCapsules.filter(c => c.userId === userId).length
     };
   }
 };

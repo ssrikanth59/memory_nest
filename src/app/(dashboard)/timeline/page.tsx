@@ -1,14 +1,32 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, Camera, Video, AlignLeft, Calendar } from "lucide-react";
+import { Filter, Calendar, ImageIcon, Video, Star, Clock } from "lucide-react";
 import Link from "next/link";
 import BlurText from "@/components/BlurText";
 
 export default function TimelinePage() {
-  const years = ["2026", "2025", "2024"];
-  const memories: any[] = []; // Removed feed data
+  const [memories, setMemories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMemories = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/memories");
+        const data = await res.json();
+        if (data.memories) {
+          setMemories(data.memories);
+        }
+      } catch (e) {
+        console.error("Failed to fetch memories", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMemories();
+  }, []);
 
   return (
     <motion.div 
@@ -41,7 +59,11 @@ export default function TimelinePage() {
         <div className="timeline-glow-line" />
 
         <div className="space-y-24">
-          {memories.length === 0 ? (
+          {loading ? (
+            <div className="w-full flex justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-emerald"></div>
+            </div>
+          ) : memories.length === 0 ? (
             <div className="text-center py-20 glass-card rounded-[3rem] border-dashed border-2 border-emerald/30 shadow-2xl relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald/5 to-transparent pointer-events-none" />
               <Calendar className="w-20 h-20 text-emerald/30 mx-auto mb-6 group-hover:scale-110 transition-transform duration-500" />
@@ -57,7 +79,7 @@ export default function TimelinePage() {
             </div>
           ) : memories.map((memory, i) => (
             <motion.div 
-              key={i} 
+              key={memory._id} 
               className="relative pl-12 md:pl-20 group"
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -68,27 +90,27 @@ export default function TimelinePage() {
 
               <div className="glass-card p-10 rounded-[2.5rem] hover:-translate-y-2 transition-all duration-500 bg-white/60 dark:bg-zinc-900/40 shadow-xl border-emerald/10">
                 <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
-                  <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center bg-emerald text-white shadow-lg ${memory.color}`}>
-                    <memory.icon className="w-8 h-8" />
+                  <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center bg-emerald text-white shadow-lg`}>
+                    {memory.type === 'video' ? <Video className="w-8 h-8" /> : memory.type === 'star' ? <Star className="w-8 h-8" /> : <ImageIcon className="w-8 h-8" />}
                   </div>
                   <div>
                     <h3 className="font-heading font-black text-3xl tracking-tight font-attract mb-1">{memory.title}</h3>
                     <div className="flex items-center gap-3 text-emerald font-black uppercase tracking-[0.2em] text-xs">
-                      <Calendar className="w-4 h-4" /> {memory.date}
+                      <Calendar className="w-4 h-4" /> {new Date(memory.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </div>
                   </div>
                 </div>
 
-                {memory.desc && (
-                  <p className="text-muted text-lg mb-8 leading-relaxed font-medium">{memory.desc}</p>
+                {memory.description && (
+                  <p className="text-muted text-lg mb-8 leading-relaxed font-medium">{memory.description}</p>
                 )}
 
-                {memory.img && (
+                {memory.mediaUrl && (
                   <div className="rounded-[2rem] overflow-hidden shadow-2xl border-2 border-white/20">
                     <img 
-                      src={`https://picsum.photos/seed/${memory.img}/1200/600`} 
+                      src={memory.mediaUrl} 
                       alt={memory.title} 
-                      className="w-full h-auto max-h-[500px] object-cover hover:scale-105 transition-transform duration-1000" 
+                      className="w-full h-auto max-h-[600px] object-cover hover:scale-105 transition-transform duration-1000" 
                     />
                   </div>
                 )}
