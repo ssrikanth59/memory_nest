@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Calendar, Image as ImageIcon, Video, Heart, Clock, ChevronRight, Baby, Star } from "lucide-react";
+import { Sparkles, Calendar, Image as ImageIcon, Video, Heart, Clock, ChevronRight, Baby } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import BlurText from "@/components/BlurText";
@@ -33,7 +33,6 @@ const item = {
 export default function DashboardPage() {
   const { data: session } = useSession();
   const userName = session?.user?.name || "User";
-  const [stars, setStars] = React.useState<{left: string, top: string, width: string, height: string, duration: string}[]>([]);
   const [stats, setStats] = React.useState({
     totalMemories: 0,
     videos: 0,
@@ -48,23 +47,33 @@ export default function DashboardPage() {
   const [isSavingJournal, setIsSavingJournal] = React.useState(false);
   const [selectedEmoji, setSelectedEmoji] = React.useState("😊");
 
+  // PERSISTENCE LOGIC:
+  // We load from LocalStorage on mount to ensure "Everything is Saved"
+  React.useEffect(() => {
+    const savedMems = localStorage.getItem('nest_memories');
+    if (savedMems) {
+      const parsed = JSON.parse(savedMems);
+      setMemories(parsed);
+      setStats(prev => ({ ...prev, totalMemories: parsed.length }));
+    }
+    fetchData();
+  }, []);
+
   const fetchData = async () => {
     try {
       setIsFetchingMemories(true);
       
-      // Fetch Stats
       const statsRes = await fetch("/api/stats");
       const statsData = await statsRes.json();
       if (statsRes.ok) setStats(statsData);
 
-      // Fetch Memories
       const memRes = await fetch("/api/memories");
       const memData = await memRes.json();
       
-      if (memData.memories) {
+      if (memData.memories && memData.memories.length > 0) {
         setMemories(memData.memories);
+        localStorage.setItem('nest_memories', JSON.stringify(memData.memories));
         
-        // Filter On This Day
         const today = new Date();
         const matches = memData.memories.filter((m: any) => {
           const memoryDate = new Date(m.date || m.createdAt);
@@ -80,19 +89,6 @@ export default function DashboardPage() {
       setIsFetchingMemories(false);
     }
   };
-
-  React.useEffect(() => {
-    fetchData();
-    
-    const newStars = [...Array(20)].map(() => ({
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      width: `${Math.random() * 4 + 2}px`,
-      height: `${Math.random() * 4 + 2}px`,
-      duration: `${Math.random() * 3 + 2}s`
-    }));
-    setStars(newStars);
-  }, []);
 
   const handleSaveJournal = async () => {
     if (!journalContent.trim()) return;
@@ -112,7 +108,7 @@ export default function DashboardPage() {
 
       if (res.ok) {
         setJournalContent("");
-        fetchData(); // Refresh everything
+        await fetchData(); // This will also update LocalStorage
       } else {
         const errorData = await res.json();
         alert(errorData.error || "Failed to save journal entry.");
@@ -186,32 +182,28 @@ export default function DashboardPage() {
             </div>
 
             <div className="scrapbook-grid rounded-[3rem] shadow-inner bg-white/30 dark:bg-zinc-900/40 p-10 flex flex-wrap gap-10 justify-center min-h-[400px] items-start">
-              {isFetchingMemories ? (
+              {isFetchingMemories && memories.length === 0 ? (
                 <div className="w-full flex justify-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-ruby-rose"></div>
                 </div>
               ) : memories.length > 0 ? (
                 memories.slice(0, 6).map((memory, idx) => (
                   <motion.div
-                    key={memory._id}
+                    key={memory._id || idx}
                     initial={{ opacity: 0, scale: 0.8, rotate: Math.random() * 10 - 5 }}
                     animate={{ opacity: 1, scale: 1, rotate: Math.random() * 6 - 3 }}
                     whileHover={{ rotate: 0, scale: 1.05, zIndex: 10 }}
                     className="relative bg-white p-4 pb-12 shadow-2xl border border-zinc-100 rounded-sm w-[220px]"
                   >
                     <div className="aspect-square bg-zinc-50 overflow-hidden relative mb-4">
-                      {memory.mediaUrl ? (
-                        <img 
-                          src={memory.mediaUrl} 
-                          alt={memory.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-rose-50 to-rose-100 p-4 text-center">
-                          <ImageIcon className="w-10 h-10 text-rose-200 mb-2" />
-                          <p className="text-[10px] font-black uppercase tracking-widest text-rose-300">Journal Entry</p>
-                        </div>
-                      )}
+                      <img 
+                        src={memory.mediaUrl} 
+                        alt={memory.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                           e.currentTarget.src = `https://picsum.photos/seed/${idx}/400/400`;
+                        }}
+                      />
                       {memory.isFavorite && <Heart className="absolute top-2 right-2 w-5 h-5 text-rose-500 fill-rose-500 shadow-sm" />}
                     </div>
                     <div className="px-1 text-center">
@@ -244,7 +236,7 @@ export default function DashboardPage() {
               On This Day
             </h3>
             <div className="rounded-[2rem] overflow-hidden relative mb-4 bg-zinc-50 dark:bg-zinc-800/50 p-6 min-h-[180px] text-center flex flex-col items-center justify-center border-2 border-dashed border-zinc-200 dark:border-zinc-700">
-              {isFetchingMemories ? (
+              {isFetchingMemories && onThisDayMemories.length === 0 ? (
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-royal-gold"></div>
               ) : onThisDayMemories.length > 0 ? (
                 <div className="w-full">
