@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { connectToDB } from "@/lib/mongodb";
 import { User } from "@/lib/models/User";
 import mongoose from "mongoose";
+import { MockDB } from "./mock-db";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -21,39 +22,41 @@ export const authOptions: NextAuthOptions = {
         try {
           await connectToDB();
           
-          // If the database is not connected, we transition to Sanctuary Mode
-          if (mongoose.connection.readyState !== 1) {
-            console.warn("=> Database disconnected. Entering Sanctuary Mode.");
-            throw new Error("Database connection failed");
+          // Case 1: Database is connected
+          if (mongoose.connection.readyState === 1) {
+            const user = await User.findOne({ email: credentials.email });
+            if (user && user.password) {
+              const isCorrectPassword = await bcrypt.compare(credentials.password, user.password);
+              if (isCorrectPassword) {
+                return { 
+                  id: user._id.toString(), 
+                  email: user.email, 
+                  name: user.name,
+                  vaultPin: user.vaultPin
+                };
+              }
+            }
           }
 
-          const user = await User.findOne({ email: credentials.email });
-
-          if (!user || !user.password) {
-            throw new Error("Invalid email or password");
+          // Case 2: Database failure or User not found in DB
+          // Check the Mock DB (to make it work instantly)
+          const mockUser = await MockDB.findUserByEmail(credentials.email);
+          if (mockUser && mockUser.password) {
+            const isCorrectPassword = await bcrypt.compare(credentials.password, mockUser.password);
+            if (isCorrectPassword) {
+              return {
+                id: mockUser.id,
+                email: mockUser.email,
+                name: mockUser.name,
+                vaultPin: mockUser.vaultPin
+              };
+            }
           }
 
-          const isCorrectPassword = await bcrypt.compare(credentials.password, user.password);
-
-          if (!isCorrectPassword) {
-            throw new Error("Invalid email or password");
-          }
-
-          return { 
-            id: user._id.toString(), 
-            email: user.email, 
-            name: user.name,
-            vaultPin: user.vaultPin,
-            image: user.image,
-            phone: user.phone,
-            language: user.language
-          };
+          throw new Error("Invalid email or password");
         } catch (error: any) {
-          // If it's a DB error, we catch it and throw a specific message
-          if (error.message.includes('buffering') || error.message.includes('connection') || error.message.includes('authentication failed')) {
-            throw new Error("Database connection failed");
-          }
-          throw error;
+          console.error("Auth Error:", error.message);
+          throw new Error(error.message || "Authentication failed");
         }
       }
     })
@@ -69,9 +72,6 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = (user as any).id;
         token.vaultPin = (user as any).vaultPin;
-        token.image = (user as any).image;
-        token.phone = (user as any).phone;
-        token.language = (user as any).language;
       }
       if (trigger === "update" && session) {
         return { ...token, ...session.user };
@@ -82,9 +82,6 @@ export const authOptions: NextAuthOptions = {
       if (session.user && token.id) {
         (session.user as any).id = token.id;
         (session.user as any).vaultPin = token.vaultPin;
-        (session.user as any).phone = token.phone;
-        (session.user as any).language = token.language;
-        session.user.image = token.image as string;
       }
       return session;
     }
