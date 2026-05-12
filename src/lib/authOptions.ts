@@ -14,47 +14,43 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log("Auth Failure: Missing email or password");
-          throw new Error("Invalid credentials");
+          throw new Error("Missing email or password");
         }
 
         try {
           await connectToDB();
-        } catch (error) {
-          console.error("Auth Failure: Database connection error", error);
-          throw new Error("Database connection failed");
+          
+          const user = await User.findOne({ email: credentials.email });
+
+          if (!user || !user.password) {
+            throw new Error("Invalid email or password");
+          }
+
+          const isCorrectPassword = await bcrypt.compare(credentials.password, user.password);
+
+          if (!isCorrectPassword) {
+            throw new Error("Invalid email or password");
+          }
+
+          return { 
+            id: user._id.toString(), 
+            email: user.email, 
+            name: user.name,
+            vaultPin: user.vaultPin,
+            image: user.image,
+            phone: user.phone,
+            language: user.language
+          };
+        } catch (error: any) {
+          console.error("Auth System Error:", error.message);
+          
+          // If it's a database error, we throw a specific message that our UI can catch
+          if (error.message.includes('authentication failed') || error.message.includes('connection')) {
+            throw new Error("Database connection failed");
+          }
+          
+          throw new Error(error.message || "Authentication failed");
         }
-
-        const user = await User.findOne({ email: credentials.email });
-
-        if (!user) {
-          console.log(`Auth Failure: User not found with email: ${credentials.email}`);
-          throw new Error("Invalid credentials");
-        }
-
-        if (!user.password) {
-          console.log(`Auth Failure: User ${credentials.email} has no password set`);
-          throw new Error("Invalid credentials");
-        }
-
-        const isCorrectPassword = await bcrypt.compare(credentials.password, user.password);
-
-        if (!isCorrectPassword) {
-          console.log(`Auth Failure: Incorrect password for user: ${credentials.email}`);
-          throw new Error("Invalid credentials");
-        }
-
-        console.log(`Auth Success: User logged in: ${credentials.email}`);
-
-        return { 
-          id: user._id.toString(), 
-          email: user.email, 
-          name: user.name,
-          vaultPin: user.vaultPin,
-          image: user.image,
-          phone: user.phone,
-          language: user.language
-        };
       }
     })
   ],
@@ -69,22 +65,10 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = (user as any).id;
         token.vaultPin = (user as any).vaultPin;
-        
-        // Prevent huge base64 strings from crashing the JWT cookie (4KB limit)
-        // NextAuth automatically maps user.image to token.picture, so we must clear both!
-        const userImage = (user as any).image;
-        if (userImage && userImage.startsWith('data:image')) {
-          token.image = null;
-          token.picture = null;
-        } else {
-          token.image = userImage;
-          token.picture = userImage;
-        }
-        
+        token.image = (user as any).image;
         token.phone = (user as any).phone;
         token.language = (user as any).language;
       }
-      // Handle session update
       if (trigger === "update" && session) {
         return { ...token, ...session.user };
       }
@@ -97,28 +81,9 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).phone = token.phone;
         (session.user as any).language = token.language;
         session.user.image = token.image as string;
-
-        // Ensure we always have the freshest data from DB (especially base64 images that we strip from JWT)
-        try {
-          await connectToDB();
-          const dbUser = await User.findById(token.id);
-          if (dbUser) {
-            session.user.name = dbUser.name;
-            session.user.email = dbUser.email;
-            if (dbUser.image) {
-               session.user.image = dbUser.image;
-            }
-            (session.user as any).phone = dbUser.phone;
-            (session.user as any).language = dbUser.language;
-            (session.user as any).baby = dbUser.baby || null;
-            (session.user as any).settings = dbUser.settings || {};
-          }
-        } catch (err) {
-          console.error("Error fetching user session data:", err);
-        }
       }
       return session;
     }
   },
-  secret: process.env.NEXTAUTH_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error("NEXTAUTH_SECRET is required in production"); })() : "your-very-secure-random-secret-key-memory-nest-1234"),
+  secret: process.env.NEXTAUTH_SECRET || "your-secret-key",
 };
