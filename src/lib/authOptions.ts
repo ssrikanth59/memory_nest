@@ -40,7 +40,8 @@ export const authOptions: NextAuthOptions = {
 
           // Case 2: Database failure or User not found in DB
           // Check the Persistent Cookie (to make it work instantly on Vercel)
-          const cookieStore = cookies();
+          // Note: cookies() is async in Next.js 15+
+          const cookieStore = await cookies();
           const mockUserCookie = cookieStore.get('MOCK_USER_DATA');
           
           if (mockUserCookie) {
