@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { connectToDB } from "@/lib/mongodb";
 import { User } from "@/lib/models/User";
+import mongoose from "mongoose";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -20,6 +21,12 @@ export const authOptions: NextAuthOptions = {
         try {
           await connectToDB();
           
+          // If the database is not connected, we transition to Sanctuary Mode
+          if (mongoose.connection.readyState !== 1) {
+            console.warn("=> Database disconnected. Entering Sanctuary Mode.");
+            throw new Error("Database connection failed");
+          }
+
           const user = await User.findOne({ email: credentials.email });
 
           if (!user || !user.password) {
@@ -42,14 +49,11 @@ export const authOptions: NextAuthOptions = {
             language: user.language
           };
         } catch (error: any) {
-          console.error("Auth System Error:", error.message);
-          
-          // If it's a database error, we throw a specific message that our UI can catch
-          if (error.message.includes('authentication failed') || error.message.includes('connection')) {
+          // If it's a DB error, we catch it and throw a specific message
+          if (error.message.includes('buffering') || error.message.includes('connection') || error.message.includes('authentication failed')) {
             throw new Error("Database connection failed");
           }
-          
-          throw new Error(error.message || "Authentication failed");
+          throw error;
         }
       }
     })
