@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, CheckCircle2 } from "lucide-react";
+import { Heart, CheckCircle2, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -32,9 +32,8 @@ export default function RegisterPage() {
 
       if (res.ok) {
         setIsSuccess(true);
-        setTimeout(() => {
-          router.push("/login?registered=true");
-        }, 2000);
+        // We no longer automatically redirect. 
+        // We show a button for the user to manually "Proceed to Login".
       } else {
         const data = await res.json();
         setError(data.message || "An error occurred");
@@ -79,14 +78,21 @@ export default function RegisterPage() {
               key="success-message"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center py-10 space-y-6 text-center"
+              className="flex flex-col items-center justify-center py-10 space-y-8 text-center"
             >
               <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center border-2 border-emerald-500/30">
                 <CheckCircle2 className="w-12 h-12 text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-3xl font-black text-rose-950 mb-2">Registration Successful!</h2>
-                <p className="text-rose-900/70 font-bold italic">Opening the sanctuary login...</p>
+                <h2 className="text-4xl font-black text-rose-950 mb-3">Account Created!</h2>
+                <p className="text-rose-900/70 font-bold text-lg mb-8 italic">Your digital sanctuary is ready for you.</p>
+                
+                <button 
+                  onClick={() => router.push("/login?registered=true")}
+                  className="w-full bg-rose-500 text-white hover:bg-rose-600 py-5 rounded-2xl font-black text-xl tracking-tight flex items-center justify-center gap-3 active:scale-95 shadow-2xl shadow-rose-500/20 transition-all"
+                >
+                  Proceed to Login <ArrowRight className="w-6 h-6" />
+                </button>
               </div>
             </motion.div>
           ) : (
