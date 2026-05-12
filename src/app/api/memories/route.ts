@@ -4,8 +4,6 @@ import type { NextRequest } from 'next/server';
 import { authOptions } from '@/lib/authOptions';
 import { connectToDB } from '@/lib/mongodb';
 import Memory from '@/lib/models/Memory';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 import mongoose from 'mongoose';
 import { MockDB } from '@/lib/mock-db';
 
@@ -30,19 +28,27 @@ export async function POST(req: NextRequest) {
 
     let mediaUrl = '';
     
+    // IMAGE HANDLING:
+    // If a file is uploaded, we convert it to Base64 for the resilient "Sanctuary Mode"
     if (file && file.size > 0) {
       try {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-        await mkdir(uploadDir, { recursive: true });
-        const filePath = path.join(uploadDir, fileName);
-        await writeFile(filePath, buffer);
-        mediaUrl = `/uploads/${fileName}`;
+        const base64 = buffer.toString('base64');
+        mediaUrl = `data:${file.type};base64,${base64}`;
+        
+        // Limit size for session storage (approx 1MB)
+        if (mediaUrl.length > 1500000) {
+           console.warn("=> Image too large for session storage, using placeholder.");
+           mediaUrl = `https://picsum.photos/seed/${Date.now()}/800/800`;
+        }
       } catch (uploadError) {
-        console.warn("=> File upload failed, but continuing with text-only memory.");
+        console.warn("=> Data conversion failed, using magic fallback image.");
+        mediaUrl = `https://picsum.photos/seed/${Date.now()}/800/800`;
       }
+    } else {
+      // If NO file (Quick Journal), we use a beautiful placeholder so it never looks blank
+      mediaUrl = `https://picsum.photos/seed/${Math.random()}/800/800`;
     }
 
     try {
